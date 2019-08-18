@@ -1,0 +1,1 @@
+addSbtPlugin("com.thoughtworks.example" % "sbt-example" % "6.0.1")
