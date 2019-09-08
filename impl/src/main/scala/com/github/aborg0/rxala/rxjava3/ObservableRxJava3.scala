@@ -6,7 +6,7 @@ import java.util.function.Predicate
 import com.github.aborg0.rxala.invariant.wrapper.{BackPressureObservableWrapper, BackPressureSubscriberWrapper, ObservableWrapperFactory}
 import com.github.aborg0.rxala.invariant.{Observable, Subscriber}
 import com.github.aborg0.rxala.{CanOnlyFail, Cardinality, CardinalityFlatMapResult, Cold, EmptyCompletion, ExactlyOne, FlatMapIs, Temperature, WithBackPressure}
-import io.reactivex.Flowable
+import io.reactivex.rxjava3.core.Flowable
 
 class ObservableRxJava3[R, E, T, C <: Cardinality, H <: Temperature](private[rxala] override val wrapped: RxJava3BackPressure.WrappedObservableType[R, E, T])
   extends AnyVal with BackPressureObservableWrapper[R, E, T, C, H, RxJava3BackPressure.type] {
@@ -14,7 +14,7 @@ class ObservableRxJava3[R, E, T, C <: Cardinality, H <: Temperature](private[rxa
   override def flatMap[RI <: R, EI >: E, Q, CI <: Cardinality, HI <: Temperature](f: java.util.function.Function[_ >: T, Observable[_ >: RI, _ <: EI, _ <: Q, CI, WithBackPressure, _<: HI, RxJava3BackPressure.type]])(
     implicit flatMapBehaviour: FlatMapIs,
     cardinalityResult: CardinalityFlatMapResult[C, CI]): Observable[RI, EI, Q, cardinalityResult.C, WithBackPressure, HI, RxJava3BackPressure.type] = {
-    val mapper: io.reactivex.functions.Function[T, org.reactivestreams.Publisher[Q] /*io.reactivex.ObservableSource[Q]*/ ] = func((t: T) => {
+    val mapper: io.reactivex.rxjava3.functions.Function[T, org.reactivestreams.Publisher[Q] /*io.reactivex.ObservableSource[Q]*/ ] = func((t: T) => {
       f(t).asInstanceOf[BackPressureObservableWrapper[RI, EI, Q, cardinalityResult.C, HI, RxJava3BackPressure.type]].wrapped
     })
     flatMapBehaviour match {

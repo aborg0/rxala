@@ -2,7 +2,7 @@ package com.github.aborg0.rxala.reactor
 
 import com.github.aborg0.rxala.{Cold, ExactlyOne, WithBackPressure}
 import com.github.aborg0.rxala.invariant.{Observable, Subscriber}
-import io.reactivex.subscribers.TestSubscriber
+import io.reactivex.rxjava3.subscribers.TestSubscriber
 import org.scalatest.WordSpec
 
 class SimpleReactorTests extends WordSpec {
