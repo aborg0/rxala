@@ -1,3 +1,5 @@
 package com.github.aborg0.rxala
 
-trait Family
+trait Family[B <: BackPressure] {
+  type SubscriptionType
+}

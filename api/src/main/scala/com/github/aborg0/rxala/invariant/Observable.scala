@@ -2,7 +2,7 @@ package com.github.aborg0.rxala.invariant
 
 import java.util.Optional
 
-import com.github.aborg0.rxala.{<:!<, AtMostOne, CanOnlyFail, Cardinality, CardinalityFlatMapResult, EmptyCompletion, ExactlyOne, Family, FlatMapIs, LowerBounded, UpperBounded}
+import com.github.aborg0.rxala.{<:!<, AtMostOne, BackPressure, CanOnlyFail, Cardinality, CardinalityFlatMapResult, EmptyCompletion, ExactlyOne, Family, FlatMapIs, LowerBounded, NoBackPressure, Temperature, UpperBounded, WithBackPressure}
 
 /**
   *
@@ -10,14 +10,16 @@ import com.github.aborg0.rxala.{<:!<, AtMostOne, CanOnlyFail, Cardinality, Cardi
   * @tparam E Error
   * @tparam T Data
   * @tparam C Cardinality
+  * @tparam B Back-pressure supported?
+  * @tparam H Hot or cold?
   * @tparam F Implementation family
   */
-trait Observable[R, E, T, C <: Cardinality, F <: Family] extends Any with FlowableSource[R, E, T, C, F] {
-  def flatMap[RI <: R, EI >: E, Q, CI <: Cardinality](f: java.util.function.Function[_ >: T, Observable[_ >: RI, _ <: EI, _ <: Q, CI, F]])(implicit flatMapBehaviour: FlatMapIs, cardinalityResult: CardinalityFlatMapResult[C, CI]): Observable[RI, EI, Q, cardinalityResult.C, F]
+trait Observable[R, E, T, C <: Cardinality, B <: BackPressure, H <: Temperature, F <: Family[B]] extends Any with ObservableSource[R, E, T, B,  F] {
+  def flatMap[RI <: R, EI >: E, Q, CI <: Cardinality, HI <: Temperature](f: java.util.function.Function[_ >: T, Observable[_ >: RI, _ <: EI, _ <: Q, CI, B, _<:HI, F]])(implicit flatMapBehaviour: FlatMapIs, cardinalityResult: CardinalityFlatMapResult[C, CI]): Observable[RI, EI, Q, cardinalityResult.C, B, HI, F]
 
-  def map[Q](f: java.util.function.Function[_ >: T, _ <: Q]): Observable[R, E, Q, C, F]
+  def map[Q](f: java.util.function.Function[_ >: T, _ <: Q]): Observable[R, E, Q, C, B, H, F]
 
-  def withFilter(keep: java.util.function.Predicate[_ >: T]): Observable[R, E, T, Cardinality, F]
+  def withFilter(keep: java.util.function.Predicate[_ >: T]): Observable[R, E, T, Cardinality, B, H, F]
 
   /**
     * {{{
@@ -33,21 +35,22 @@ trait Observable[R, E, T, C <: Cardinality, F <: Family] extends Any with Flowab
     * @param notLowerBounded  Evidence for no lower bound on cardinality
     * @return The filtered result
     */
-  def keep(p: java.util.function.Predicate[_ >: T])(implicit upperBoundedCard: C <:< UpperBounded, notLowerBounded: C <:!< LowerBounded): Observable[R, E, T, C, F]
+  def keep(p: java.util.function.Predicate[_ >: T])(implicit upperBoundedCard: C <:< UpperBounded, notLowerBounded: C <:!< LowerBounded): Observable[R, E, T, C, B, H, F]
 
-  def keep(p: java.util.function.Predicate[_ >: T]): Observable[R, E, T, Cardinality, F]
+  def keep(p: java.util.function.Predicate[_ >: T]): Observable[R, E, T, Cardinality, B, H, F]
 }
 
-trait ObservableFactory[EBound, F <: Family] {
-  def empty[R, E <: EBound, T]: Observable[R, _ <: E, T, _ <: EmptyCompletion, F]
+trait ObservableFactory[EBound, B <: BackPressure, F <: Family[B]] {
+  def empty[R, E <: EBound, T, H <: Temperature]: Observable[R, _ <: E, T, _ <: EmptyCompletion, B, H, F]
 
-  def fail[R, E <: EBound with Throwable, T](error: E): Observable[R, _ <: E, T, CanOnlyFail, F]
+  def fail[R, E <: EBound with Throwable, T, H <: Temperature](error: E): Observable[R, _ <: E, T, CanOnlyFail, B, H, F]
 
-  def single[R, E <: EBound, T](t: T): Observable[R, _ <: E, T, _ <: ExactlyOne, F]
+  def single[R, E <: EBound, T, H <: Temperature](t: T): Observable[R, _ <: E, T, _ <: ExactlyOne, B, H, F]
 
-  def maybe[R, E <: EBound, T <: Any](o: Optional[T]): Observable[R, _ <: E, T, _ <: AtMostOne, F] = if (o.isPresent) {
-    single[R, E, T](o.get)
+  def maybe[R, E <: EBound, T <: Any, H <: Temperature](o: Optional[T]): Observable[R, _ <: E, T, _ <: AtMostOne, B, H, F] = if (o.isPresent) {
+    single[R, E, T, H](o.get)
   } else {
-    empty[R, E, T]
+    empty[R, E, T, H]
   }
+
 }
