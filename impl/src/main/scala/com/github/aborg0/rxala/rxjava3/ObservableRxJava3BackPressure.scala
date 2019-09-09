@@ -8,17 +8,17 @@ import com.github.aborg0.rxala.invariant.{Observable, Subscriber}
 import com.github.aborg0.rxala.{CanOnlyFail, Cardinality, CardinalityFlatMapResult, Cold, EmptyCompletion, ExactlyOne, FlatMapIs, Temperature, WithBackPressure}
 import io.reactivex.rxjava3.core.Flowable
 
-class ObservableRxJava3[R, E, T, C <: Cardinality, H <: Temperature](private[rxala] override val wrapped: RxJava3BackPressure.WrappedObservableType[R, E, T])
+class ObservableRxJava3BackPressure[R, E, T, C <: Cardinality, H <: Temperature](private[rxala] override val wrapped: RxJava3BackPressure.WrappedObservableType[R, E, T])
   extends AnyVal with BackPressureObservableWrapper[R, E, T, C, H, RxJava3BackPressure.type] {
 
   override def flatMap[RI <: R, EI >: E, Q, CI <: Cardinality, HI <: Temperature](f: java.util.function.Function[_ >: T, Observable[_ >: RI, _ <: EI, _ <: Q, CI, WithBackPressure, _<: HI, RxJava3BackPressure.type]])(
     implicit flatMapBehaviour: FlatMapIs,
     cardinalityResult: CardinalityFlatMapResult[C, CI]): Observable[RI, EI, Q, cardinalityResult.C, WithBackPressure, HI, RxJava3BackPressure.type] = {
-    val mapper: io.reactivex.rxjava3.functions.Function[T, org.reactivestreams.Publisher[Q] /*io.reactivex.ObservableSource[Q]*/ ] = func((t: T) => {
+    val mapper: io.reactivex.rxjava3.functions.Function[T, org.reactivestreams.Publisher[Q]] = func((t: T) => {
       f(t).asInstanceOf[BackPressureObservableWrapper[RI, EI, Q, cardinalityResult.C, HI, RxJava3BackPressure.type]].wrapped
     })
     flatMapBehaviour match {
-      case FlatMapIs.SwitchMap => ObservableRxJava3Factory.wrap/*[RI, EI, Q, HI, cardinalityResult.C]*/(wrapped.switchMap(mapper))
+      case FlatMapIs.SwitchMap => ObservableRxJava3Factory.wrap(wrapped.switchMap(mapper))
       case FlatMapIs.MergeMap => ObservableRxJava3Factory.wrap(wrapped.flatMap(mapper))
       case FlatMapIs.ConcatMap => ObservableRxJava3Factory.wrap(wrapped.concatMap(mapper))
     }
@@ -36,7 +36,7 @@ class ObservableRxJava3[R, E, T, C <: Cardinality, H <: Temperature](private[rxa
 
 object ObservableRxJava3Factory extends ObservableWrapperFactory[Any, RxJava3BackPressure.type] {
   override private[rxala] def wrap[R, E, T, C <: Cardinality, H <: Temperature](o: RxJava3BackPressure.WrappedObservableType[R, E, T]) =
-    new ObservableRxJava3[R, E, T, C, H](o)
+    new ObservableRxJava3BackPressure[R, E, T, C, H](o)
 
   override def empty[R, E, T, H <: Temperature]: Observable[R, _ <: E, T, _ <: EmptyCompletion, WithBackPressure, H, RxJava3BackPressure.type] =
     wrap[R, E, T, EmptyCompletion, H](Flowable.empty())
