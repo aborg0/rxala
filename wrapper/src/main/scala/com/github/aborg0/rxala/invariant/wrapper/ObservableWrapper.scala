@@ -9,7 +9,7 @@ trait BackPressureObservableWrapper[R, E, T, C <: Cardinality, H <: Temperature,
   private[rxala] def wrapped: F#WrappedObservableType[R, E, T]
 //  private[rxala] def wrappedNoBackPressure[BB <: B =:= NoBackPressure]: F#WrappedNoBackPressureObservableType[R, E, T]
 
-  private[rxala] def extract(s: Subscriber[_ <: R, _ >: E, _ >: T, WithBackPressure, F]): F#WrappedSubscriberType[R, E, T] = s.asInstanceOf[BackPressureSubscriberWrapper[R, E, T, F]].obs
+  private[rxala] def extract(s: Subscriber[_ <: R, _ >: E, _ >: T, WithBackPressure, F]): F#WrappedSubscriberType[R, E, T] = s.asInstanceOf[BackPressureSubscriberWrapper[R, E, T, F]].subscriber
 
   override def keep(p: Predicate[_ >: T])(implicit upperBoundedCard: C <:< UpperBounded, notLowerBounded: C <:!< LowerBounded): Observable[R, E, T, C, WithBackPressure, H, F] = withFilter(p).asInstanceOf[Observable[R, E, T, C, WithBackPressure, H, F]]
 }

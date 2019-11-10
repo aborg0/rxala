@@ -30,7 +30,7 @@ class ObservableRxJava3BackPressure[R, E, T, C <: Cardinality, H <: Temperature]
 
   override def keep(p: Predicate[_ >: T]): Observable[R, E, T,Cardinality,  WithBackPressure, H, RxJava3BackPressure.type] = withFilter(p)
 
-  override def subscribe(s: Subscriber[_ <: R, _ >: E, _ >: T, WithBackPressure, RxJava3BackPressure.type]): Unit = wrapped.subscribe(s.asInstanceOf[BackPressureSubscriberWrapper[R, E, T, RxJava3BackPressure.type]].obs)
+  override def subscribe(s: Subscriber[_ <: R, _ >: E, _ >: T, WithBackPressure, RxJava3BackPressure.type]): Unit = wrapped.subscribe(s.asInstanceOf[BackPressureSubscriberWrapper[R, E, T, RxJava3BackPressure.type]].subscriber)
 
 }
 
